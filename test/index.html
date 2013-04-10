@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>exif reader testpage</title>
+</head>
+<body>
+  <input id="file" type="file">
+  <button onclick="go4it();">get exif</button>
+
+  <ul id="tagList">
+  </ul>
+
+  <script type="text/javascript" src="../lib/jquery-1.9.1.min.js"></script>
+  <script type="text/javascript" src="../src/exif.js"></script>
+
+  <script type="text/javascript">
+    window.onerror = function(e) { console.log(e); alert(e); }
+
+    if (window.DataView) {
+      //alert("woho!");
+    }
+
+    function go4it() {
+      var tagListEl = document.getElementById('tagList');
+      tagListEl.innerHTML = "";
+
+      var input = document.getElementById('file');
+
+      if (input.files.length > 0) {
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          console.log('loaded buffer', e.target.result);
+          // alert("loaded buffer!");
+
+          var exif = new Exif(e.target.result);
+
+          addTagsToPage(exif.tags);        
+        }
+
+        var blob;
+
+        if (input.files[0].webkitSlice) {
+          blob = input.files[0].webkitSlice(0, 128 * 1024);
+        }
+        else {
+          blob = input.files[0].slice(0, 128 * 1024);
+        }
+
+        // alert(reader.readAsArrayBuffer);
+
+        reader.readAsArrayBuffer(blob)
+      }
+
+      function addTagsToPage(tags) {
+        var tagListEl = document.getElementById('tagList');
+
+        for (var i = 0; i < tags.length; ++i) {
+          var tag = tags[i];
+
+          if (!tag.unz) {
+            console.log("missing unz for tag", tag);
+          }
+          else {
+            var listEl = document.createElement("li");
+            listEl.innerText = tag.unz.name + " = " + tag.value + " (" + tag.unz.desc + ")";
+            tagListEl.appendChild(listEl);
+          }
+        }
+      }
+    }
+  </script>  
+</body>
+</html>
